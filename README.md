@@ -51,7 +51,7 @@
 > The screenshot above is a placeholder path (`docs/assets/dnslint.jpg`) —
 > add a real capture of the running frontend there before publishing.
 
-**Live demo:** [shrtn-nine.vercel.app](https://shrtn-nine.vercel.app)
+**Live demo:** [dns-lint.vercel.app](https://dns-lint.vercel.app)
 
 <br>
 

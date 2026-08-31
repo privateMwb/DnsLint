@@ -1,54 +1,35 @@
-<!--
-  Retargeting: replace every <angle-bracket> placeholder below. The
-  badge URLs, CI workflow names, and project-structure tree already
-  match this skeleton's actual layout — only the owner/repo and
-  project name need swapping in those. Features is marked as a
-  section to write fresh each time; don't invent content to fill it.
-  Also edit the two <text> strings inside .github/assets/banner.svg
-  (project name + tagline).
-
-  Sections intentionally NOT included, and why:
-    - Benchmarks — this is an app template, not a library; there's
-      no reference implementation to measure against.
-    - Installation via find_package/vcpkg/Conan — nothing here is
-      meant to be consumed as a library dependency.
-    - A #include Quick Start — replaced with actual run instructions
-      below, since this scaffold produces a running app, not an API
-      to call.
--->
-
 <p align="center">
-  <img src=".github/assets/banner.svg" alt="<ProjectName>" width="100%">
+  <img src=".github/assets/banner.svg" alt="DnsLint" width="100%">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/<owner>/<repo>?style=for-the-badge&logo=github&color=6E40C9&labelColor=0D1117" alt="Version">
-  <img src="https://img.shields.io/badge/License-MIT-39D0D8?style=for-the-badge&labelColor=0D1117" alt="License - MIT">
-  <img src="https://img.shields.io/badge/C%2B%2B-23-00599C?style=for-the-badge&logo=c%2B%2B&labelColor=0D1117" alt="C++ - 23">
-  <img src="https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&labelColor=0D1117" alt="React - Vite">
+  <img src="https://img.shields.io/github/v/release/privateMwb/DnsLint?style=for-the-badge&logo=github&color=37E8A0&labelColor=0B0F0D" alt="Version">
+  <img src="https://img.shields.io/badge/License-MIT-FF8A3D?style=for-the-badge&labelColor=0B0F0D" alt="License - MIT">
+  <img src="https://img.shields.io/badge/C%2B%2B-23-00599C?style=for-the-badge&logo=c%2B%2B&labelColor=0B0F0D" alt="C++ - 23">
+  <img src="https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&labelColor=0B0F0D" alt="React - Vite">
 </p>
 
 <p align="center">
-  <a href="https://github.com/<owner>/<repo>/actions/workflows/build.yml">
-    <img src="https://github.com/<owner>/<repo>/actions/workflows/build.yml/badge.svg" alt="Build">
+  <a href="https://github.com/privateMwb/DnsLint/actions/workflows/build.yml">
+    <img src="https://github.com/privateMwb/DnsLint/actions/workflows/build.yml/badge.svg" alt="Build">
   </a>
-  <a href="https://github.com/<owner>/<repo>/actions/workflows/frontend.yml">
-    <img src="https://github.com/<owner>/<repo>/actions/workflows/frontend.yml/badge.svg" alt="Frontend">
+  <a href="https://github.com/privateMwb/DnsLint/actions/workflows/frontend.yml">
+    <img src="https://github.com/privateMwb/DnsLint/actions/workflows/frontend.yml/badge.svg" alt="Frontend">
   </a>
-  <a href="https://github.com/<owner>/<repo>/actions/workflows/sanitizers.yml">
-    <img src="https://github.com/<owner>/<repo>/actions/workflows/sanitizers.yml/badge.svg" alt="Sanitizers">
+  <a href="https://github.com/privateMwb/DnsLint/actions/workflows/sanitizers.yml">
+    <img src="https://github.com/privateMwb/DnsLint/actions/workflows/sanitizers.yml/badge.svg" alt="Sanitizers">
   </a>
-  <a href="https://github.com/<owner>/<repo>/actions/workflows/clang-tidy.yml">
-    <img src="https://github.com/<owner>/<repo>/actions/workflows/clang-tidy.yml/badge.svg" alt="Clang Tidy">
+  <a href="https://github.com/privateMwb/DnsLint/actions/workflows/clang-tidy.yml">
+    <img src="https://github.com/privateMwb/DnsLint/actions/workflows/clang-tidy.yml/badge.svg" alt="Clang Tidy">
   </a>
-  <a href="https://github.com/<owner>/<repo>/actions/workflows/clang-format.yml">
-    <img src="https://github.com/<owner>/<repo>/actions/workflows/clang-format.yml/badge.svg" alt="Clang Format">
+  <a href="https://github.com/privateMwb/DnsLint/actions/workflows/clang-format.yml">
+    <img src="https://github.com/privateMwb/DnsLint/actions/workflows/clang-format.yml/badge.svg" alt="Clang Format">
   </a>
-  <a href="https://github.com/<owner>/<repo>/actions/workflows/docs.yml">
-    <img src="https://github.com/<owner>/<repo>/actions/workflows/docs.yml/badge.svg" alt="Documentation">
+  <a href="https://github.com/privateMwb/DnsLint/actions/workflows/docs.yml">
+    <img src="https://github.com/privateMwb/DnsLint/actions/workflows/docs.yml/badge.svg" alt="Documentation">
   </a>
-  <a href="https://github.com/<owner>/<repo>/actions/workflows/release.yml">
-    <img src="https://github.com/<owner>/<repo>/actions/workflows/release.yml/badge.svg" alt="Release">
+  <a href="https://github.com/privateMwb/DnsLint/actions/workflows/release.yml">
+    <img src="https://github.com/privateMwb/DnsLint/actions/workflows/release.yml/badge.svg" alt="Release">
   </a>
 </p>
 
@@ -61,11 +42,7 @@
   <img src=".github/assets/divider.svg" alt="" width="100%">
 </p>
 
-<!-- One or two sentences: what this is, and the two or three things
-     that make it worth using over starting from scratch. This is
-     the only line most visitors read — make it specific, not
-     generic marketing copy. -->
-<p align="center"><ProjectName> is a <one-line description of what this app does and why>.</p>
+<p align="center">DnsLint is a DNS health checkup tool: point it at any domain and it runs live DNS queries to flag missing records, misconfigured email security, and TTL issues — showing the actual decoded values (real IPv6 addresses, real mail server and nameserver hostnames), not just pass/fail.</p>
 
 <br>
 
@@ -86,14 +63,32 @@
 
 ## <a id="features"></a>✨ Features
 
-<!-- Write these fresh per app — name the actual functionality this
-     particular app has, not what the template scaffolds. A bullet
-     that just describes the template ("has a CMake build", "has a
-     Vite frontend") belongs in Project Structure, not here. -->
-
-- **<Specific feature>** — <what it does and why it's built the way
-  it is>.
-- **<Another feature>** — <same pattern>.
+- **Live DNS decoding, not just pass/fail** — AAAA, MX, and NS checks
+  show the actual resolved values: real IPv6 addresses, real mail
+  server and nameserver hostnames, decoded straight from the DNS wire
+  format including compression-pointer-encoded names.
+- **Email security checks** — SPF and DMARC checks show the actual
+  matched TXT record content on a pass, not a generic "found" message.
+  DKIM is checked best-effort against a handful of common selectors and
+  reports "undetected" rather than a false "missing" when a
+  non-standard selector is in use.
+- **Apex-domain-aware routing** — MX, NS, and DMARC are checked
+  against the domain's apex regardless of what subdomain was
+  submitted (checking `www.example.com` still correctly evaluates
+  `example.com`'s MX/NS/DMARC), since those records are apex-domain
+  concepts by nature for any site.
+- **TTL sanity checks** — flags A/MX record TTLs that are unusually
+  low (needless query load) or unusually high (slow to propagate a
+  future fix).
+- **Persisted check history** — every run is saved via MiniDB and
+  readable back via `GET /api/history?domain=...`, newest first.
+- **Response caching** — repeat checks against the same domain skip
+  the DNS round trip entirely while cached; cache duration is derived
+  from the record's own real TTL, never held longer than a real
+  resolver would.
+- **Rate-limited API** — every check fans out into several real UDP
+  queries against third-party nameservers on a visitor's behalf; the
+  API is rate-limited per client to keep that from being abused.
 
 <div align="right"><a href="#-table-of-contents"><img src=".github/assets/back-to-top.svg" alt="Back to top" height="28"></a></div>
 
@@ -110,8 +105,8 @@
 ## <a id="getting-started"></a>🚀 Getting Started
 
 ```bash
-git clone https://github.com/<owner>/<repo>.git
-cd <repo>
+git clone https://github.com/privateMwb/DnsLint.git
+cd DnsLint
 ```
 
 **Backend:**
@@ -120,7 +115,7 @@ cd <repo>
 cd backend
 cmake -B build -S .
 cmake --build build
-./build/app_backend
+./build/dnslint_backend
 ```
 
 **Frontend** (separate terminal):
@@ -143,18 +138,46 @@ See [backend/README.md](backend/README.md) and
 <summary>Expand full tree</summary>
 
 ```
-<repo>/
+DnsLint/
 ├── backend/
-│   ├── data/                         # runtime data; gitignored except .gitkeep
+│   ├── data/                         # runtime data -- MUST be a mounted
+│   │                                  # persistent volume in any deployment
+│   │                                  # (see Deployment below); dnslint.json
+│   │                                  # (check history) lives here
 │   ├── external/                     # vendored dependencies, as git submodules
+│   │   ├── dnsresolver/              # DnsPro -- DNS packet parsing/building
+│   │   ├── falconhttp/               # HTTP server, routing, middleware, CORS
+│   │   ├── ratethrottle/             # ThrottlePro -- the rate limiter
+│   │   └── minidatabase/             # MiniDB -- check-history persistence
 │   ├── include/
+│   │   ├── CheckResult.h
+│   │   └── QueryEngine.h
 │   ├── src/
+│   │   ├── checks/
+│   │   │   ├── EmailSecurityChecks.h
+│   │   │   ├── MissingRecordChecks.h
+│   │   │   ├── RDataDecode.h
+│   │   │   └── TtlChecks.h
+│   │   ├── database/                 # MiniDB-backed check history
+│   │   │   ├── HistoryStore.cpp
+│   │   │   └── HistoryStore.h
+│   │   ├── middleware/
+│   │   │   └── RateLimiterMiddleware.h
+│   │   ├── routes/
+│   │   │   └── CheckRoutes.h         # POST /api/check, GET /api/history
+│   │   ├── main.cpp
+│   │   └── QueryEngine.cpp
 │   ├── CMakeLists.txt
 │   └── README.md
 │
 ├── frontend/
 │   ├── public/
-│   ├── src/                          # components, pages, lib/ (api client, cn() helper)
+│   ├── src/
+│   │   ├── components/               # CheckForm, ResultRow, ResolutionTrace, SummaryPanel, ...
+│   │   ├── lib/                      # api client, checkMeta, cn() helper, types
+│   │   ├── pages/                    # CheckerPage, AboutPage
+│   │   ├── App.tsx
+│   │   └── main.tsx
 │   ├── .env.example
 │   ├── .gitignore
 │   ├── .prettierignore
@@ -219,7 +242,7 @@ handlers.
 Full API reference for the backend, generated with Doxygen from
 `docs/Doxyfile`:
 
-**https://<owner>.github.io/<repo>/**
+**https://privatemwb.github.io/DnsLint/**
 
 <div align="right"><a href="#-table-of-contents"><img src=".github/assets/back-to-top.svg" alt="Back to top" height="28"></a></div>
 
@@ -232,18 +255,20 @@ to clone any submodules-of-submodules a host's own automatic
 submodule init doesn't recurse into.
 
 ```bash
-docker build -t <repo>-backend .
-docker run -p 8080:8080 <repo>-backend
+docker build -t dnslint-backend .
+docker run -p 8080:8080 -v dnslint-data:/app/data dnslint-backend
 ```
+
+**`backend/data/` must be a mounted persistent volume** (as shown
+above), not a path inside the container's own writable layer —
+`HistoryStore` (see `backend/src/database/`) writes check history to
+`data/dnslint.json` on every request, and without a real volume
+mounted there, every redeploy silently wipes it.
 
 **Frontend:** a static Vite build (`npm run build` → `frontend/dist/`),
 deployable to any static host. Set `VITE_API_BASE_URL` to the
 backend's deployed URL at build time or via the host's environment
 variables.
-
-No specific host is wired up in this template — pick per app based
-on what it needs (a persistent volume for `backend/data/`, a
-managed database instead, etc.).
 
 <div align="right"><a href="#-table-of-contents"><img src=".github/assets/back-to-top.svg" alt="Back to top" height="28"></a></div>
 
@@ -261,7 +286,7 @@ Issues and pull requests are welcome. Before submitting a PR:
 
 ## <a id="changelog"></a>📝 Changelog
 
-See the [Releases](https://github.com/<owner>/<repo>/releases)
+See the [Releases](https://github.com/privateMwb/DnsLint/releases)
 page for version history and release notes.
 
 ## <a id="license"></a>📄 License

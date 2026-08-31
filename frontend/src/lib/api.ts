@@ -1,43 +1,44 @@
-// Centralized API client -- so every component doesn't hand-roll
-// its own fetch() calls, base URL, and error handling.
-//
-// Set VITE_API_BASE_URL per environment via .env.local (gitignored,
-// see .env.example for the variable a new dev needs to set).
+import type { CheckReport } from "./types";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+const API_BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:8080";
 
 export class ApiError extends Error {
-  status: number;
+  status?: number;
 
-  constructor(status: number, message: string) {
+  constructor(message: string, status?: number) {
     super(message);
     this.name = "ApiError";
     this.status = status;
   }
 }
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    ...options,
-  });
+/**
+ * Calls POST /api/check (see backend/src/routes/CheckRoutes.h::postCheck).
+ * Throws ApiError for anything that stops a report from rendering:
+ * network failure, the rate limiter's 429, or any non-2xx response.
+ */
+export async function checkDomain(domain: string, signal?: AbortSignal): Promise<CheckReport> {
+  let response: Response;
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new ApiError(res.status, body || res.statusText);
+  try {
+    response = await fetch(`${API_BASE_URL}/api/check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain }),
+      signal,
+    });
+  } catch {
+    throw new ApiError("Could not reach the DnsLint backend. Is it running?");
   }
 
-  // No content (e.g. 204) -- nothing to parse.
-  if (res.status === 204) return undefined as T;
+  if (response.status === 429) {
+    throw new ApiError("Too many checks in a short time. Wait a moment and try again.", 429);
+  }
 
-  return res.json() as Promise<T>;
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new ApiError(text || `Request failed (${response.status}).`, response.status);
+  }
+
+  return (await response.json()) as CheckReport;
 }
-
-export const api = {
-  get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }),
-  put: <T>(path: string, body?: unknown) =>
-    request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined }),
-  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
-};

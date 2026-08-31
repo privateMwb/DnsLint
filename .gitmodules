@@ -1,0 +1,12 @@
+[submodule "backend/external/falconhttp"]
+	path = backend/external/falconhttp
+	url = https://github.com/privateMwb/FalconHTTP
+[submodule "backend/external/ratethrottle"]
+	path = backend/external/ratethrottle
+	url = https://github.com/privateMwb/RateThrottle
+[submodule "backend/external/dnsresolver"]
+	path = backend/external/dnsresolver
+	url = https://github.com/privateMwb/DnsResolver
+[submodule "backend/external/minidatabase"]
+	path = backend/external/minidatabase
+	url = https://github.com/privateMwb/MiniDatabase

@@ -1,13 +1,16 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "@/pages/Home";
+import { Route, Routes } from "react-router-dom";
+import { Header } from "./components/Header";
+import { CheckerPage } from "./pages/CheckerPage";
+import { AboutPage } from "./pages/AboutPage";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <div className="min-h-screen">
+      <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
-        {/* Add routes here as pages/ grows. */}
+        <Route path="/" element={<CheckerPage />} />
+        <Route path="/about" element={<AboutPage />} />
       </Routes>
-    </BrowserRouter>
+    </div>
   );
 }

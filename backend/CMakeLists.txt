@@ -5,21 +5,12 @@
 # Top-level build file for backend/. Any git submodules vendored
 # under external/ (see .gitmodules once you add one) get pulled
 # in via add_subdirectory below.
-#
-# TODO when starting a new app from this template:
-#   - Rename the project() call below.
-#   - Rename the `app_backend` executable target if you want a
-#     different binary name -- just keep it in sync with
-#     BINARY_NAME in ../Dockerfile, since that's the name Docker
-#     copies out of the build and runs.
-#   - Replace src/main.cpp / include/sample.h with real code,
-#     and update the sources list below to match.
 # ============================================================
 
 cmake_minimum_required(VERSION 3.20)
 
 project(
-    AppName
+    DnsLint
     VERSION 0.1.0
     LANGUAGES CXX
 )
@@ -45,39 +36,47 @@ set(BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
 set(BUILD_REGRESSION OFF CACHE BOOL "" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-# TODO: uncomment and add one line per submodule once you've
-# added it under external/ (see external/.gitkeep). Example:
-# add_subdirectory(external/somelib)
+# external/dnsresolver   -> DnsPro       (Builder/Parser/Packet types)
+# external/falconhttp    -> FalconHTTP   (HTTP server, routing, middleware)
+# external/ratethrottle  -> ThrottlePro  (rate limiter used by RateLimiterMiddleware.h)
+# external/minidatabase  -> MiniDB       (check-history persistence used by HistoryStore.h)
 #
-# NOTE: if a submodule itself vendors independent copies of
-# other shared libraries, and you add more than one submodule
-# that vendors the *same* shared dependency, linking can fail
-# with "multiple definition of ..." -- that's a submodule-level
-# packaging issue, not something wrong with this file. Try
-# building first; only chase that fix if the linker actually
-# complains.
+# NOTE: if a submodule itself vendors independent copies of other shared
+# libraries, and more than one submodule vendors the *same* shared
+# dependency (all three of these vendor VectorPro, for instance), linking
+# can fail with "multiple definition of ..." -- that's a submodule-level
+# packaging issue, not something wrong with this file. Try building
+# first; only chase that fix if the linker actually complains.
+add_subdirectory(external/dnsresolver)
+add_subdirectory(external/falconhttp)
+add_subdirectory(external/ratethrottle)
+add_subdirectory(external/minidatabase)
 
 # ============================================================================
 # Executable
 # ============================================================================
 
-# TODO: rename this target if you rename the binary -- keep it in
-# sync with BINARY_NAME in ../Dockerfile.
+file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+
 add_executable(
-    app_backend
-    src/main.cpp
+    dnslint_backend
+    ${APP_SOURCES}
 )
 
 target_include_directories(
-    app_backend
+    dnslint_backend
     PRIVATE
         include
         src
 )
 
-# TODO: link any submodules added above, e.g.:
-# target_link_libraries(
-#     app_backend
-#     PRIVATE
-#         SomeLib
-# )
+target_link_libraries(
+    dnslint_backend
+    PRIVATE
+        DnsPro
+        FalconHTTP
+        ThrottlePro
+        MiniDB
+)

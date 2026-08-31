@@ -1,11 +1,59 @@
-@import "tailwindcss";
+/*
+ * Import order matters here: `@import "tailwindcss"` gets inlined by
+ * the bundler, which would push any @import after it behind real CSS
+ * rules in the output -- invalid per the CSS spec's "imports must come
+ * first" rule (Vite's build catches this as a warning). Keep external
+ * @imports (fonts, boxicons) before Tailwind's own.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 @import "boxicons/css/boxicons.min.css";
+@import "tailwindcss";
 
 /*
- * Global styles beyond utility classes go here -- e.g. @theme
- * customization (Tailwind v4's replacement for tailwind.config.js
- * theme.extend), or the rare base-element override that isn't
- * worth repeating as a utility class everywhere.
- *
- * See: https://tailwindcss.com/docs/theme
+ * Design tokens for DnsLint. Grounded in the subject's own visual
+ * language rather than a generic dark-dashboard palette: router/switch
+ * status LEDs are literally green/amber-orange/red, and DNS tooling
+ * output (dig, traceroute) is monospace by nature -- both borrowed
+ * here on purpose, not decoratively.
  */
+@theme {
+  --color-ink: #0b0f0d; /* page background -- near-black with a faint green undertone, not pure black */
+  --color-panel: #121815; /* card/panel surface */
+  --color-panel-2: #182019; /* nested surfaces, inset wells */
+  --color-line: #232b26; /* hairline borders */
+
+  --color-signal-green: #37e8a0; /* pass -- router "link OK" LED */
+  --color-signal-orange: #ff8a3d; /* warn + primary action color */
+  --color-signal-red: #ff6b5c; /* fail -- kept warm/muted so it doesn't fight green+orange */
+
+  --color-paper: #eaf2ed; /* primary text -- slight green-white, not stark #fff */
+  --color-ash: #8b978f; /* secondary/muted text */
+  --color-ash-dim: #5c655f; /* tertiary text, timestamps */
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  /* Faint PCB-via dot grid -- a quiet nod to circuit boards, not a loud texture. */
+  background-image: radial-gradient(circle at 1px 1px, rgba(234, 242, 237, 0.045) 1px, transparent 0);
+  background-size: 28px 28px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

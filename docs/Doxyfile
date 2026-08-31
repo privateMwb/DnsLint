@@ -14,8 +14,8 @@
 # ============================================================
 
 # TODO: set these per-app.
-PROJECT_NAME            = "App Name"
-PROJECT_BRIEF           = "One-line description of what this app does."
+PROJECT_NAME            = "DnsLint"
+PROJECT_BRIEF           = "DNS health checkup tool -- flags missing records, misconfigured email security, and TTL issues, with actual decoded values instead of just pass/fail. Persists check history and caches responses against real record TTLs."
 
 OUTPUT_DIRECTORY        = .
 

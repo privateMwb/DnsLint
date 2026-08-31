@@ -201,7 +201,7 @@ QueryResult QueryEngine::query(std::string_view domain, RecordType type) {
             return result;
         }
 
-        struct timeval tv{};
+        struct timeval tv {};
         tv.tv_sec = static_cast<time_t>(timeoutMs_ / 1000);
         tv.tv_usec = static_cast<suseconds_t>((timeoutMs_ % 1000) * 1000);
         ::setsockopt(socketFd_, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
@@ -211,7 +211,7 @@ QueryResult QueryEngine::query(std::string_view domain, RecordType type) {
     // address (the expected input, e.g. "8.8.8.8") without pulling in
     // getaddrinfo()'s own DNS lookup for what should be a fixed,
     // pre-resolved resolver endpoint.
-    struct sockaddr_in resolverAddr{};
+    struct sockaddr_in resolverAddr {};
     resolverAddr.sin_family = AF_INET;
     resolverAddr.sin_port = htons(resolverPort_);
     if (::inet_pton(AF_INET, resolverHost_.c_str(), &resolverAddr.sin_addr) != 1) {

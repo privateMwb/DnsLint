@@ -3,10 +3,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/privateMwb/DnsLint?style=for-the-badge&logo=github&color=37E8A0&labelColor=0B0F0D" alt="Version">
-  <img src="https://img.shields.io/badge/License-MIT-FF8A3D?style=for-the-badge&labelColor=0B0F0D" alt="License - MIT">
-  <img src="https://img.shields.io/badge/C%2B%2B-23-00599C?style=for-the-badge&logo=c%2B%2B&labelColor=0B0F0D" alt="C++ - 23">
-  <img src="https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&labelColor=0B0F0D" alt="React - Vite">
+  <img src="https://img.shields.io/github/v/release/privateMwb/DnsLint?style=for-the-badge&logo=github&color=37E8A0&labelColor=0B0F0D&logoColor=0B0F0D" alt="Version">
+  <img src="https://img.shields.io/badge/License-MIT-72E3B0?style=for-the-badge&labelColor=0B0F0D" alt="License - MIT">
+  <img src="https://img.shields.io/badge/C%2B%2B-23-B4C38F?style=for-the-badge&logo=c%2B%2B&labelColor=0B0F0D&logoColor=0B0F0D" alt="C++ - 23">
+  <img src="https://img.shields.io/badge/React-Vite-FF8A3D?style=for-the-badge&logo=react&labelColor=0B0F0D&logoColor=0B0F0D" alt="React - Vite">
 </p>
 
 <p align="center">

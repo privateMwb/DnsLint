@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/assets/banner.svg" alt="DnsLint" width="100%">
+  <img src=".github/assets/banner.svg" alt="DnsLint banner" width="100%">
 </p>
 
 <p align="center">
@@ -43,6 +43,15 @@
 </p>
 
 <p align="center">DnsLint is a DNS health checkup tool: point it at any domain and it runs live DNS queries to flag missing records, misconfigured email security, and TTL issues — showing the actual decoded values (real IPv6 addresses, real mail server and nameserver hostnames), not just pass/fail.</p>
+
+<p align="center">
+  <img src="docs/assets/dnslint.png" alt="DnsLint frontend" width="720">
+</p>
+
+> The screenshot above is a placeholder path (`docs/assets/dnslint.png`) —
+> add a real capture of the running frontend there before publishing.
+
+**Live demo:** [shrtn-nine.vercel.app](https://shrtn-nine.vercel.app)
 
 <br>
 

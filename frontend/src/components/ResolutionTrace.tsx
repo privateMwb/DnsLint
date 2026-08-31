@@ -26,16 +26,23 @@ function buildHops(domain: string): string[] {
 
 export function ResolutionTrace({ domain, active, className }: ResolutionTraceProps) {
   const hops = buildHops(domain || "example.com");
-  const [litCount, setLitCount] = useState(active ? 0 : hops.length);
+
+  // The effect below only ever subscribes to a real external system
+  // (setTimeout) -- it never calls setState synchronously in its own
+  // body (react-hooks/set-state-in-effect flags exactly that, even
+  // when immediately followed by scheduling real timers). Restarting
+  // the animation from 0 for a brand new run therefore isn't done by
+  // resetting state here at all -- it's done by remounting this
+  // component via a changing `key` at the call site (see
+  // CheckerPage.tsx), which gives `animatedLitCount` a fresh initial
+  // value for free, no reset call needed.
+  const [animatedLitCount, setAnimatedLitCount] = useState(0);
+  const litCount = active ? animatedLitCount : hops.length;
 
   useEffect(() => {
-    if (!active) {
-      setLitCount(hops.length);
-      return;
-    }
+    if (!active) return;
 
-    setLitCount(0);
-    const timers = hops.map((_, i) => setTimeout(() => setLitCount((n) => Math.max(n, i + 1)), i * 200));
+    const timers = hops.map((_, i) => setTimeout(() => setAnimatedLitCount((n) => Math.max(n, i + 1)), i * 200));
     return () => timers.forEach(clearTimeout);
     // hops is derived from domain each render; re-running the hop-light
     // sequence keys off (active, domain) rather than the derived array

@@ -22,14 +22,14 @@
 // clang-format off
 #include <database/HistoryStore.h> // HistoryStore (own header)
 
-#include <ArenaPro/Arena.h> // ArenaPro::Arena
+#include <ArenaPro/Arena.h>      // ArenaPro::Arena
 #include <ArenaPro/ArenaScope.h> // ArenaPro::ArenaScope
 
 #include <MiniDB/Common/Type.h> // MiniDB::Common::DBConstants
 
-#include <algorithm> // std::max
+#include <algorithm>  // std::max
 #include <filesystem> // std::filesystem::exists
-#include <span> // std::span
+#include <span>       // std::span
 // clang-format on
 
 namespace DnsCheckup {

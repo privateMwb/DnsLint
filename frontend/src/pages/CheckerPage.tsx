@@ -8,12 +8,14 @@ import { ResultRow } from "../components/ResultRow";
 
 export function CheckerPage() {
   const [pendingDomain, setPendingDomain] = useState<string | null>(null);
+  const [runId, setRunId] = useState(0);
   const [report, setReport] = useState<CheckReport | null>(null);
   const [checkedAt, setCheckedAt] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(domain: string) {
     setPendingDomain(domain);
+    setRunId((n) => n + 1); // Forces ResolutionTrace to remount even on a repeat of the same domain -- see its key below.
     setError(null);
 
     try {
@@ -44,7 +46,7 @@ export function CheckerPage() {
 
       {pendingDomain && (
         <div className="mt-6 rounded-2xl border border-line bg-panel px-6 py-5">
-          <ResolutionTrace domain={pendingDomain} active />
+          <ResolutionTrace key={runId} domain={pendingDomain} active />
           <p className="mt-3 font-mono text-xs text-ash-dim">resolving…</p>
         </div>
       )}

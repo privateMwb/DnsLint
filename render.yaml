@@ -1,0 +1,15 @@
+# Render Blueprint for the DnsLint backend: one container that runs the real
+# dnslint_backend, built from the Dockerfile. The frontend is deployed separately
+# (Vercel); see docs/DEPLOYMENT.md.
+services:
+  - type: web
+    name: dnslint
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # "free" works but sleeps after a while without traffic; the first request afterwards
+    # takes about a minute, and the saved check history is gone (/app/data is not a
+    # persistent volume). A paid plan with a persistent disk mounted at /app/data would
+    # keep it.
+    plan: free
+    healthCheckPath: /api/health

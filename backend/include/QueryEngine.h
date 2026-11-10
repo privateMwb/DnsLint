@@ -104,9 +104,10 @@ struct QueryResult {
 
 /**
  * @brief Sends one DNS query over UDP and parses the response.
- * @details Not thread-safe to share a single instance's socket across
- * concurrent calls -- see the open question below on whether one
- * `QueryEngine` is constructed per request or reused across requests.
+ * @details Safe to share one instance across threads: each `query()` opens
+ * its own UDP socket and closes it before returning, and the response cache
+ * is guarded by a mutex. (An earlier version kept one socket on the engine,
+ * which let concurrent callers read each other's responses.)
  */
 class QueryEngine {
   public:
@@ -167,7 +168,6 @@ class QueryEngine {
     std::string resolverHost_;
     std::uint16_t resolverPort_;
     std::uint32_t timeoutMs_;
-    int socketFd_ = -1; ///< POSIX socket fd; opened lazily on first `query()`.
 
     /// @brief One cached result plus when it stops being valid.
     struct CacheEntry {

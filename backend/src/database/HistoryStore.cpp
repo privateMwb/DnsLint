@@ -27,7 +27,7 @@
 
 #include <MiniDB/Common/Type.h> // MiniDB::Common::DBConstants
 
-#include <algorithm>  // std::max
+#include <algorithm>  // std::max, std::min
 #include <filesystem> // std::filesystem::exists
 #include <span>       // std::span
 // clang-format on
@@ -217,11 +217,16 @@ VectorPro::Vector<CheckRun> HistoryStore::getHistory(const std::string& domain, 
     FilterPredicate domainFilter{"domain", Op::EQ, JsonPro::Json(domain)};
     SortCondition newestFirst{"checkedAt", SortOrder::DESC};
 
+    // No limit is passed to select(): it stops scanning as soon as it has `limit` matches
+    // and only then sorts, which returns the *oldest* `limit` runs (in newest-first order)
+    // rather than the newest. Sort everything for the domain, then cut to `limit` below.
     MiniDB::Engine::QueryResult result =
-        qe.select(*table, std::span<const FilterPredicate>(&domainFilter, 1), &newestFirst, limit);
+        qe.select(*table, std::span<const FilterPredicate>(&domainFilter, 1), &newestFirst);
 
-    runs.reserve(result.records.size());
-    for (const Record& record : result.records) {
+    const std::size_t count = std::min(limit, result.records.size());
+    runs.reserve(count);
+    for (std::size_t i = 0; i < count; ++i) {
+        const Record& record = result.records[i];
         CheckRun run;
         run.domain = record.getField("domain").asString();
         run.checkedAtEpochSeconds =

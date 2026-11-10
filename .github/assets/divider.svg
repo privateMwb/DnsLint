@@ -1,12 +1,61 @@
-<svg width="1200" height="4" viewBox="0 0 1200 4" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="56" viewBox="0 0 1200 56" xmlns="http://www.w3.org/2000/svg" role="presentation">
   <defs>
-    <linearGradient id="divider" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#37E8A0" stop-opacity="0"/>
-      <stop offset="20%" stop-color="#37E8A0" stop-opacity="0.8"/>
-      <stop offset="50%" stop-color="#8FE0B8" stop-opacity="1"/>
-      <stop offset="80%" stop-color="#FF8A3D" stop-opacity="0.8"/>
-      <stop offset="100%" stop-color="#FF8A3D" stop-opacity="0"/>
+    <linearGradient id="inRail" x1="40" y1="0" x2="468" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#37E8A0" stop-opacity="0"/><stop offset="55%" stop-color="#37E8A0" stop-opacity="0.55"/><stop offset="100%" stop-color="#8FE0B8" stop-opacity="1"/>
     </linearGradient>
+    <linearGradient id="outRail" x1="732" y1="0" x2="1160" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFC857" stop-opacity="1"/><stop offset="45%" stop-color="#FF8A3D" stop-opacity="0.55"/><stop offset="100%" stop-color="#FF8A3D" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#37E8A0"/><stop offset="35%" stop-color="#8FE0B8"/><stop offset="70%" stop-color="#FFC857"/><stop offset="100%" stop-color="#FF8A3D"/></linearGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFC857" stop-opacity="0.18"/><stop offset="100%" stop-color="#FFC857" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <rect width="1200" height="4" fill="url(#divider)"/>
+
+  <ellipse cx="600" cy="28" rx="140" ry="26" fill="url(#halo)"/>
+
+  <!-- Dotted rails: a query goes in on the left, the answer comes back out on the right -->
+  <line x1="40" y1="28" x2="468" y2="28" stroke="url(#inRail)" stroke-width="3" stroke-linecap="round" stroke-dasharray="0.1 13"/>
+  <line x1="732" y1="28" x2="1160" y2="28" stroke="url(#outRail)" stroke-width="3" stroke-linecap="round" stroke-dasharray="0.1 13"/>
+
+  <!-- Faint tick marks -->
+  <g stroke="#232B26" stroke-width="1">
+    <line x1="100" y1="20" x2="100" y2="23"/><line x1="200" y1="20" x2="200" y2="23"/><line x1="300" y1="20" x2="300" y2="23"/><line x1="400" y1="20" x2="400" y2="23"/>
+    <line x1="100" y1="33" x2="100" y2="36"/><line x1="200" y1="33" x2="200" y2="36"/><line x1="300" y1="33" x2="300" y2="36"/><line x1="400" y1="33" x2="400" y2="36"/>
+    <line x1="800" y1="20" x2="800" y2="23"/><line x1="900" y1="20" x2="900" y2="23"/><line x1="1000" y1="20" x2="1000" y2="23"/><line x1="1100" y1="20" x2="1100" y2="23"/>
+    <line x1="800" y1="33" x2="800" y2="36"/><line x1="900" y1="33" x2="900" y2="36"/><line x1="1000" y1="33" x2="1000" y2="36"/><line x1="1100" y1="33" x2="1100" y2="36"/>
+  </g>
+
+  <!-- The resolution trace: . -> com -> example.com -->
+  <g font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11.5" text-anchor="middle">
+    <rect x="488" y="14" width="28" height="28" rx="9" fill="#121815" stroke="#232B26" stroke-width="1.5"/>
+    <text x="502" y="32" fill="#8B978F" font-weight="700">.</text>
+
+    <path d="M520 28 H534" stroke="#37E8A0" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 4" fill="none">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.2s" repeatCount="indefinite"/>
+    </path>
+
+    <rect x="538" y="14" width="52" height="28" rx="9" fill="#121815" stroke="#37E8A0" stroke-opacity="0.55" stroke-width="1.5"/>
+    <text x="564" y="32" fill="#8FE0B8" font-weight="700">com</text>
+
+    <path d="M594 28 H608" stroke="#FFC857" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 4" fill="none">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.2s" repeatCount="indefinite"/>
+    </path>
+
+    <rect x="612" y="12" width="116" height="32" rx="16" fill="#0B0F0D" stroke="url(#flow)" stroke-width="1.8" filter="url(#glow)"/>
+    <text x="670" y="32" fill="#EAF2ED" font-weight="700">example.com</text>
+  </g>
+
+  <!-- Packets: the query travels in, then the answer leaves -->
+  <circle r="3.6" cx="0" cy="0" fill="#37E8A0" filter="url(#glow)" opacity="0">
+    <animateMotion path="M40 28 L468 28" dur="3.2s" keyPoints="0;1;1" keyTimes="0;0.5;1" calcMode="linear" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.06;0.44;0.5;1" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="3.6" cx="0" cy="0" fill="#FF8A3D" filter="url(#glow)" opacity="0">
+    <animateMotion path="M732 28 L1160 28" dur="3.2s" keyPoints="0;0;1" keyTimes="0;0.5;1" calcMode="linear" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.5;0.56;0.94;1" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
 </svg>

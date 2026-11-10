@@ -1,19 +1,27 @@
 # ============================================================
 # .github/workflows/sanitizers.yml
-# Boots app_backend under AddressSanitizer+
-# UndefinedBehaviorSanitizer, and separately under
-# ThreadSanitizer, to catch memory/UB and data-race issues.
+# Runs DnsLint's unit tests and the real server under
+# AddressSanitizer+UndefinedBehaviorSanitizer, and separately
+# under ThreadSanitizer.
 #
-# TODO: this is a boot-only smoke test out of the box, since
-# this template's backend/src/sample.cpp has no real endpoints
-# yet. Once the app has real request handlers -- especially
-# anything concurrency-sensitive (shared state behind a lock,
-# atomics, a check-then-act critical section) -- replace the
-# "run briefly" step below with real requests against those
-# endpoints, fired concurrently for the tsan job specifically.
-# ThreadSanitizer only reports what actually gets exercised, so
-# a boot-only run won't catch a data race that only occurs on a
-# real code path being hit.
+# Two things run in each job:
+#
+#   1. dnslint_tests (backend/tests/): the unit suites, including
+#      QueryEngine and every check against an in-process mock DNS
+#      server, and HistoryStore on real files.
+#   2. dnslint_backend itself, booted and hit with real requests:
+#      malformed and invalid input (400s that need no DNS), real
+#      POST /api/check runs (which fan out into live UDP queries),
+#      and GET /api/history. The tsan job fires the checks
+#      concurrently, because ThreadSanitizer only reports what
+#      actually gets exercised -- HistoryStore's mutex and
+#      QueryEngine's cache lock are the concurrency-sensitive code
+#      here.
+#
+# The checks need outbound UDP to 8.8.8.8:53. If a runner can't
+# reach it the queries time out and every check reports "warn":
+# still a valid 200 response, still exercising the code, so that
+# is not treated as a failure.
 #
 # ASan+UBSan can share one binary; ThreadSanitizer cannot be
 # combined with ASan in the same build, hence two separate
@@ -53,27 +61,66 @@ jobs:
         working-directory: backend
         run: cmake --build build
 
-      - name: Run briefly and check for sanitizer errors
+      - name: Run the unit tests
+        working-directory: backend
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ./build/dnslint_tests
+
+      - name: Boot the server and exercise real endpoints
         working-directory: backend
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=0
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=0
         run: |
           mkdir -p data
-          ./build/app_backend > app.log 2>&1 &
+          ./build/dnslint_backend > app.log 2>&1 &
           APP_PID=$!
 
-          # TODO: replace this fixed sleep with polling a real
-          # readiness endpoint once one exists (e.g. curl a
-          # /health route in a retry loop), and add real requests
-          # here to actually exercise the app's code paths.
-          sleep 5
+          # Poll instead of a blind sleep. An unrouted-but-valid request
+          # (a missing "domain" parameter) answers 400 once the server is up.
+          for i in $(seq 1 30); do
+            if curl -s --max-time 2 -o /dev/null localhost:8080/api/history; then
+              echo "Server ready after ${i} polls"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Server never became ready -- dumping log:"
+              cat app.log
+              exit 1
+            fi
+            sleep 2
+          done
+
+          expect() {
+            # expect <status> <description> <curl args...>
+            want="$1"; shift; what="$1"; shift
+            got=$(curl -s --max-time 90 -o /dev/null -w "%{http_code}" "$@" || echo 000)
+            if [ "$got" != "$want" ]; then
+              echo "UNEXPECTED: $what returned $got, wanted $want"
+              cat app.log
+              exit 1
+            fi
+            echo "ok: $what -> $got"
+          }
+
+          # Input the server must refuse without sending any DNS query.
+          expect 400 "malformed JSON" -X POST localhost:8080/api/check -H "Content-Type: application/json" -d '{not json'
+          expect 400 "missing domain field" -X POST localhost:8080/api/check -H "Content-Type: application/json" -d '{"foo": 1}'
+          expect 400 "domain without a dot" -X POST localhost:8080/api/check -H "Content-Type: application/json" -d '{"domain": "localhost"}'
+          expect 400 "history without a domain" localhost:8080/api/history
+
+          # Real checks: live UDP queries to the resolver, then read the history back.
+          expect 200 "POST /api/check example.com" -X POST localhost:8080/api/check -H "Content-Type: application/json" -d '{"domain": "example.com"}'
+          expect 200 "POST /api/check from a pasted URL" -X POST localhost:8080/api/check -H "Content-Type: application/json" -d '{"domain": "https://www.example.com/some/path"}'
+          expect 200 "GET /api/history" "localhost:8080/api/history?domain=example.com"
 
           kill -TERM "$APP_PID" 2>/dev/null || true
 
-          # Bounded wait, not `wait "$APP_PID"` alone -- if the
-          # process is hung, SIGTERM may never be processed, and
-          # an unbounded wait would hang this job indefinitely.
+          # Bounded wait, not `wait "$APP_PID"` alone -- if the process is
+          # hung, SIGTERM may never be processed, and an unbounded wait
+          # would hang this job indefinitely.
           for i in $(seq 1 10); do
             if ! kill -0 "$APP_PID" 2>/dev/null; then
               break
@@ -92,10 +139,9 @@ jobs:
 
   tsan:
     runs-on: ubuntu-latest
-    timeout-minutes: 15 # Fail fast and visibly instead of silently
-                        # consuming CI hours if the app hangs (real
-                        # deadlock, or an unready process + a
-                        # timeout-less wait).
+    timeout-minutes: 15 # Fail fast and visibly instead of silently consuming
+                        # CI hours if the server hangs (a real deadlock, or an
+                        # unready server plus a timeout-less curl).
     steps:
       - name: Checkout (with submodules)
         uses: actions/checkout@v7
@@ -119,25 +165,73 @@ jobs:
         working-directory: backend
         run: cmake --build build
 
-      - name: Run briefly and check for data races
+      - name: Run the unit tests
+        working-directory: backend
+        env:
+          TSAN_OPTIONS: halt_on_error=1
+        run: ./build/dnslint_tests
+
+      - name: Boot the server and exercise it concurrently
         working-directory: backend
         env:
           TSAN_OPTIONS: halt_on_error=0
         run: |
           mkdir -p data
-          ./build/app_backend > app.log 2>&1 &
+          ./build/dnslint_backend > app.log 2>&1 &
           APP_PID=$!
 
-          # TODO: TSan instrumentation is slow to boot -- once a
-          # real readiness endpoint exists, poll it here instead
-          # of sleeping blind, then fire several requests
-          # concurrently against whatever code path actually
-          # holds a lock or touches shared/atomic state, so TSan
-          # has something real to observe.
-          sleep 10
+          # Poll instead of a blind sleep (TSan instrumentation is slow to boot). An unrouted-but-valid request
+          # (a missing "domain" parameter) answers 400 once the server is up.
+          for i in $(seq 1 30); do
+            if curl -s --max-time 2 -o /dev/null localhost:8080/api/history; then
+              echo "Server ready after ${i} polls"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "Server never became ready -- dumping log:"
+              cat app.log
+              exit 1
+            fi
+            sleep 2
+          done
+
+          expect() {
+            # expect <status> <description> <curl args...>
+            want="$1"; shift; what="$1"; shift
+            got=$(curl -s --max-time 90 -o /dev/null -w "%{http_code}" "$@" || echo 000)
+            if [ "$got" != "$want" ]; then
+              echo "UNEXPECTED: $what returned $got, wanted $want"
+              cat app.log
+              exit 1
+            fi
+            echo "ok: $what -> $got"
+          }
+
+          # Input the server must refuse without sending any DNS query.
+          expect 400 "malformed JSON" -X POST localhost:8080/api/check -H "Content-Type: application/json" -d '{not json'
+          expect 400 "missing domain field" -X POST localhost:8080/api/check -H "Content-Type: application/json" -d '{"foo": 1}'
+          expect 400 "domain without a dot" -X POST localhost:8080/api/check -H "Content-Type: application/json" -d '{"domain": "localhost"}'
+          expect 400 "history without a domain" localhost:8080/api/history
+
+          # Several real checks at once, plus history reads, so ThreadSanitizer has
+          # shared state (HistoryStore, the QueryEngine cache) to observe under contention.
+          pids=""
+          for n in 1 2 3 4 5 6; do
+            curl -s --max-time 90 -o /dev/null -X POST localhost:8080/api/check \
+              -H "Content-Type: application/json" -d "{\"domain\": \"host$n.example.com\"}" &
+            pids="$pids $!"
+            curl -s --max-time 90 -o /dev/null "localhost:8080/api/history?domain=host$n.example.com" &
+            pids="$pids $!"
+          done
+          for pid in $pids; do wait "$pid" || true; done
+
+          expect 200 "GET /api/history after the concurrent runs" "localhost:8080/api/history?domain=host1.example.com"
 
           kill -TERM "$APP_PID" 2>/dev/null || true
 
+          # Bounded wait, not `wait "$APP_PID"` alone -- if the process is
+          # hung, SIGTERM may never be processed, and an unbounded wait
+          # would hang this job indefinitely.
           for i in $(seq 1 10); do
             if ! kill -0 "$APP_PID" 2>/dev/null; then
               break
@@ -149,7 +243,7 @@ jobs:
 
           cat app.log
 
-          if grep -q "WARNING: ThreadSanitizer" app.log; then
+          if grep -qE "WARNING: ThreadSanitizer" app.log; then
             echo "ThreadSanitizer reported a data race -- see log above."
             exit 1
           fi

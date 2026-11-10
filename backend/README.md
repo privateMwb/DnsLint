@@ -1,12 +1,17 @@
 # backend
 
-C++ backend for this app. Built with CMake; any vendored
-dependencies live as git submodules under `external/`.
+The DnsLint C++ backend: an HTTP API that runs live DNS checks against a domain and keeps the history of
+every run. Built with CMake; its dependencies live as git submodules under `external/`:
 
-`sample.h` / `main.cpp` are placeholders showing the expected
-include/src split — replace them with real code and update the
-sources list in `CMakeLists.txt` to match. See the root
-`README.md` for the full repo layout.
+| Submodule | CMake target | Role |
+|---|---|---|
+| `dnsresolver` | `DnsPro` | DNS packet building and parsing |
+| `falconhttp` | `FalconHTTP` | HTTP server, routing, middleware, CORS |
+| `ratethrottle` | `ThrottlePro` | The rate limiter behind `RateLimiterMiddleware` |
+| `minidatabase` | `MiniDB` | Persistence for the check history |
+
+See the root [README](../README.md) for the whole project, and [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)
+for how this code fits together.
 
 ## Building
 
@@ -15,39 +20,44 @@ Out-of-source build, from `backend/`:
 ```bash
 cmake -B build -S .
 cmake --build build
+mkdir -p data          # the check history is written to data/dnslint.json
+./build/dnslint_backend
 ```
 
-Never build in-source (`cmake -B . -S .`) — see the root
-`.gitignore` notes on why, and what it explicitly guards against.
+Never build in-source (`cmake -B . -S .`); see the root `.gitignore` notes on why.
 
-The resulting binary is `build/app_backend` by default (see
-`CMakeLists.txt`). If you rename that target, also update
-`BINARY_NAME` in `../Dockerfile` so the two stay in sync.
+The build produces:
 
-## Adding a dependency as a submodule
+| Target | What it is |
+|---|---|
+| `dnslint_backend` | The server (port 8080) |
+| `dnslint_core` | Everything under `src/` except `main.cpp`, as a static library the other targets link |
+| `dnslint_tests` | The unit tests (`-DDNSLINT_BUILD_TESTS=OFF` skips them) |
+| `fuzz_*` | libFuzzer harnesses, only with `-DDNSLINT_BUILD_FUZZERS=ON` and a fuzzing engine |
+
+If you rename `dnslint_backend`, also update `BINARY_NAME` in `../Dockerfile`.
+
+## Tests
 
 ```bash
-git submodule add <repo-url> external/<name>
+cmake --build build --target dnslint_tests
+./build/dnslint_tests            # every suite
 ```
 
-Then uncomment and add an `add_subdirectory(external/<name>)`
-line in `CMakeLists.txt`, and link it in `target_link_libraries`.
-See the comments in `CMakeLists.txt` for the exact spots.
+`tests/support/mockDns.h` is a small DNS server on `127.0.0.1` that the QueryEngine and check tests use, so
+no test touches the network.
 
-If CI or a container needs to build this without a full
-`git submodule update --init --recursive` (e.g. a plain
-`COPY . .` in a Dockerfile), see `../init-nested-submodules.sh`,
-which handles cloning submodules-of-submodules from just the
-tracked `.gitmodules` files.
+## Layout
 
-## Formatting & linting
-
-Config lives at the repo root: `.clang-format` and `.clang-tidy`
-apply here. See the comments in `.clang-tidy` for which checks
-are disabled and why — update that file as this project's real
-conventions take shape.
-
-## Generated docs
-
-API reference docs are generated from `include/` and `src/` via
-Doxygen — see `../docs/README.md`.
+```
+include/   CheckResult.h, QueryEngine.h
+src/
+  checks/       MissingRecordChecks.h, EmailSecurityChecks.h, TtlChecks.h, RDataDecode.h
+  database/     HistoryStore (MiniDB-backed check history)
+  middleware/   RateLimiterMiddleware.h
+  routes/       CheckRoutes.h   (POST /api/check, GET /api/history)
+  QueryEngine.cpp, main.cpp
+tests/     unit suites and the mock DNS server
+fuzz/      libFuzzer harnesses and seed corpora
+external/  the four submodules
+```

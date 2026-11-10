@@ -1,32 +1,23 @@
-# React + TypeScript + Vite
+# frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The DnsLint web app: React 19, Vite 8, TypeScript and Tailwind CSS 4, with `react-router-dom` for its two
+pages (the checker and About). See the root [README](../README.md) for the whole project.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+cp .env.example .env.local   # VITE_API_BASE_URL, if the backend isn't on http://localhost:8080
+npm run dev                  # http://localhost:5173
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+| Script | What it does |
+|---|---|
+| `npm run dev` | Dev server with hot reload |
+| `npm run build` | Type-check and production build into `dist/` |
+| `npm run lint` | ESLint (CI runs this) |
+| `npm run format:check` | Prettier check |
+
+`VITE_API_BASE_URL` is read at build time, so changing it on a host such as Vercel needs a redeploy. For
+deployment see [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md).
+
+Colors and fonts are Tailwind theme tokens in `src/index.css`. Pass, warn and fail use LED-style green,
+orange and red; the mint-to-ember gradient (`text-flow`) is decorative only.

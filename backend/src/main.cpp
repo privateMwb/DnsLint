@@ -44,6 +44,11 @@ int main() {
     }
 
     FalconHTTP::Routing::Router router;
+    router.get("/api/health",
+               [](const FalconHTTP::HTTP::HttpRequest&, FalconHTTP::HTTP::HttpResponse& response) {
+                   response.setStatus(FalconHTTP::HTTP::HttpStatus::Ok);
+                   response.setBody("ok");
+               });
     router.post("/api/check", [&engine, &history](const FalconHTTP::HTTP::HttpRequest& request,
                                                   FalconHTTP::HTTP::HttpResponse& response) {
         DnsCheckup::Routes::postCheck(engine, history, request, response);

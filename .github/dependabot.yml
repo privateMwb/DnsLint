@@ -1,14 +1,16 @@
 # ============================================================
 # .github/dependabot.yml
 #
-# - github-actions: keeps workflow action versions
-#   (actions/checkout@v4, etc.) current.
+# - github-actions: keeps workflow action versions current.
 # - npm: keeps frontend/package.json dependencies current.
+# - docker: keeps the ubuntu base images in Dockerfile current.
+# - docker (/.clusterfuzzlite): keeps the pinned OSS-Fuzz base image
+#   digest in .clusterfuzzlite/Dockerfile current.
 #
-# No package-ecosystem entry for backend C++ deps: those are
-# pinned as git submodule commits under backend/external/ (see
-# .gitmodules), not a manifest file Dependabot understands. Bump
-# those manually, or via each submodule's own release notes.
+# - gitsubmodule: keeps FalconHTTP, DnsResolver, MiniDatabase and RateThrottle
+#   (git submodules under backend/external/) current. Updates to
+#   the four arrive as one grouped PR. Their own nested submodules
+#   are pinned by each of them and move when they do.
 # ============================================================
 
 version: 2
@@ -17,8 +19,72 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    # Sub-actions of one repo are separate dependencies to Dependabot, so each pair gets a group
+    # that moves it together in ONE PR, for every kind of update (major included). Otherwise one
+    # PR bumps build_fuzzers and leaves run_fuzzers on the old version, or the reverse.
+    # Everything else is grouped for minor and patch bumps only: a major bump gets its own PR, so
+    # it can fail or be postponed without holding back the rest. (A dependency joins the first
+    # group that matches it, which is why the specific groups come first.)
+    groups:
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
+      clusterfuzzlite:
+        patterns:
+          - "google/clusterfuzzlite/*"
+      actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "npm"
+    # Everything npm moves in ONE PR, majors included. These packages can't be bumped one at a
+    # time: react-dom needs the matching react, and @vitejs/plugin-react needs the matching
+    # vite, so separate PRs each fail CI on their own.
+    groups:
+      npm:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    groups:
+      docker:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/.clusterfuzzlite"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+    groups:
+      docker:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+    # One PR for every submodule that moved, instead of one per library.
+    groups:
+      submodules:
+        patterns:
+          - "*"

@@ -36,7 +36,8 @@ RUN cmake -S . -B build \
     -DBUILD_TESTS=OFF \
     -DBUILD_BENCHMARKS=OFF \
     -DBUILD_REGRESSION=OFF \
-    -DBUILD_EXAMPLES=OFF
+    -DBUILD_EXAMPLES=OFF \
+    -DDNSLINT_BUILD_TESTS=OFF
 
 RUN cmake --build build --config Release -j$(nproc)
 

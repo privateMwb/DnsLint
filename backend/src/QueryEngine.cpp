@@ -74,6 +74,29 @@ std::uint16_t randomQueryId() {
 //  Section 1 — Constructor & Destructor
 // ============================================================
 
+namespace {
+
+/// @brief Owns one UDP socket for the duration of a single `query()` call.
+class QuerySocket {
+  public:
+    explicit QuerySocket(int fd) noexcept : fd_(fd) {}
+    ~QuerySocket() {
+        if (fd_ >= 0)
+            ::close(fd_);
+    }
+    QuerySocket(const QuerySocket&) = delete;
+    QuerySocket& operator=(const QuerySocket&) = delete;
+
+    [[nodiscard]] int fd() const noexcept {
+        return fd_;
+    }
+
+  private:
+    int fd_;
+};
+
+} // namespace
+
 QueryEngine::QueryEngine(std::string resolverHost, std::uint16_t resolverPort,
                          std::uint32_t timeoutMs, std::size_t cacheCapacity)
     : resolverHost_(std::move(resolverHost)), resolverPort_(resolverPort), timeoutMs_(timeoutMs) {
@@ -82,10 +105,7 @@ QueryEngine::QueryEngine(std::string resolverHost, std::uint16_t resolverPort,
             cacheCapacity); // LRUCache's constructor requires >0 -- see cache_'s doc comment.
 }
 
-QueryEngine::~QueryEngine() {
-    if (socketFd_ >= 0)
-        ::close(socketFd_);
-}
+QueryEngine::~QueryEngine() = default;
 
 // ============================================================
 //  Section 2 — Cache Helpers
@@ -193,25 +213,27 @@ QueryResult QueryEngine::query(std::string_view domain, RecordType type) {
         return result;
     }
 
-    // Lazily open the socket.
-    if (socketFd_ < 0) {
-        socketFd_ = ::socket(AF_INET, SOCK_DGRAM, 0);
-        if (socketFd_ < 0) {
-            result.status = QueryStatus::SendFailed;
-            return result;
-        }
-
-        struct timeval tv {};
-        tv.tv_sec = static_cast<time_t>(timeoutMs_ / 1000);
-        tv.tv_usec = static_cast<suseconds_t>((timeoutMs_ % 1000) * 1000);
-        ::setsockopt(socketFd_, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    // One socket per query, closed when this call returns. The server shares a single
+    // QueryEngine across its worker threads, so a socket kept on the engine would be shared
+    // too: concurrent checks would then read each other's responses off it (and the lazy
+    // open itself would be a data race). A private socket per query makes every call
+    // independent, and also gives each query a fresh, unpredictable source port.
+    QuerySocket querySocket(::socket(AF_INET, SOCK_DGRAM, 0));
+    if (querySocket.fd() < 0) {
+        result.status = QueryStatus::SendFailed;
+        return result;
     }
+
+    timeval tv{};
+    tv.tv_sec = static_cast<time_t>(timeoutMs_ / 1000);
+    tv.tv_usec = static_cast<suseconds_t>((timeoutMs_ % 1000) * 1000);
+    ::setsockopt(querySocket.fd(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
     // Resolve resolverHost_ to a sockaddr. Supports a literal IPv4
     // address (the expected input, e.g. "8.8.8.8") without pulling in
     // getaddrinfo()'s own DNS lookup for what should be a fixed,
     // pre-resolved resolver endpoint.
-    struct sockaddr_in resolverAddr {};
+    sockaddr_in resolverAddr{};
     resolverAddr.sin_family = AF_INET;
     resolverAddr.sin_port = htons(resolverPort_);
     if (::inet_pton(AF_INET, resolverHost_.c_str(), &resolverAddr.sin_addr) != 1) {
@@ -223,7 +245,7 @@ QueryResult QueryEngine::query(std::string_view domain, RecordType type) {
     // reference to contiguous backing storage, so &queryBytes[0] gets
     // the same raw pointer data() would.
     ssize_t sent =
-        ::sendto(socketFd_, &queryBytes[0], queryBytes.size(), 0,
+        ::sendto(querySocket.fd(), &queryBytes[0], queryBytes.size(), 0,
                  reinterpret_cast<struct sockaddr*>(&resolverAddr), sizeof(resolverAddr));
     if (sent < 0 || static_cast<std::size_t>(sent) != queryBytes.size()) {
         result.status = QueryStatus::SendFailed;
@@ -232,8 +254,8 @@ QueryResult QueryEngine::query(std::string_view domain, RecordType type) {
 
     // Receive.
     std::array<std::byte, kMaxResponseBytes> responseBuffer{};
-    ssize_t received =
-        ::recvfrom(socketFd_, responseBuffer.data(), responseBuffer.size(), 0, nullptr, nullptr);
+    ssize_t received = ::recvfrom(querySocket.fd(), responseBuffer.data(), responseBuffer.size(), 0,
+                                  nullptr, nullptr);
     if (received < 0) {
         result.status = (errno == EAGAIN || errno == EWOULDBLOCK) ? QueryStatus::Timeout
                                                                   : QueryStatus::SendFailed;

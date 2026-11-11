@@ -1,52 +1,94 @@
-<svg width="1200" height="280" viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="300" viewBox="0 0 1200 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DnsLint: DNS health checkup for any domain">
   <defs>
+    <linearGradient id="flow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#37E8A0"/><stop offset="35%" stop-color="#8FE0B8"/><stop offset="70%" stop-color="#FFC857"/><stop offset="100%" stop-color="#FF8A3D"/></linearGradient>
+    <linearGradient id="rule" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#37E8A0" stop-opacity="0.95"/><stop offset="35%" stop-color="#8FE0B8" stop-opacity="0.8"/><stop offset="70%" stop-color="#FFC857" stop-opacity="0.55"/><stop offset="100%" stop-color="#FF8A3D" stop-opacity="0"/></linearGradient>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0B0F0D"/>
-      <stop offset="100%" stop-color="#0B0F0D"/>
+      <stop offset="0%" stop-color="#0B0F0D"/><stop offset="100%" stop-color="#121815"/>
     </linearGradient>
-
-    <linearGradient id="titleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#37E8A0"/>
-      <stop offset="50%" stop-color="#8FE0B8"/>
-      <stop offset="100%" stop-color="#FF8A3D"/>
-    </linearGradient>
-
-    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#37E8A0" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#37E8A0" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#FF8A3D" stop-opacity="0"/>
-    </linearGradient>
-
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#182019" stroke-width="1"/>
-    </pattern>
-
-    <radialGradient id="fade" cx="50%" cy="50%" r="60%">
-      <stop offset="0%" stop-color="#0B0F0D" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#0B0F0D" stop-opacity="1"/>
+    <radialGradient id="glowBg" cx="78%" cy="52%" r="38%">
+      <stop offset="0%" stop-color="#37E8A0" stop-opacity="0.10"/><stop offset="100%" stop-color="#37E8A0" stop-opacity="0"/>
     </radialGradient>
+    <radialGradient id="glowWarm" cx="96%" cy="92%" r="30%">
+      <stop offset="0%" stop-color="#FF8A3D" stop-opacity="0.09"/><stop offset="100%" stop-color="#FF8A3D" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+      <stop offset="60%" stop-color="#0B0F0D" stop-opacity="0"/><stop offset="100%" stop-color="#0B0F0D" stop-opacity="0.85"/>
+    </radialGradient>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1.1" fill="#182019"/></pattern>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
 
-  <rect width="1200" height="280" fill="url(#bg)"/>
-  <rect width="1200" height="280" fill="url(#grid)"/>
-  <rect width="1200" height="280" fill="url(#fade)"/>
+  <rect width="1200" height="300" fill="url(#bg)"/>
+  <rect width="1200" height="300" fill="url(#dots)"/>
+  <rect width="1200" height="300" fill="url(#glowBg)"/>
+  <rect width="1200" height="300" fill="url(#glowWarm)"/>
+  <rect width="1200" height="300" fill="url(#vignette)"/>
 
-  <text x="600" y="155" text-anchor="middle"
-        font-family="'Segoe UI', Helvetica, Arial, sans-serif"
-        font-size="72" font-weight="700" letter-spacing="4"
-        fill="url(#titleGradient)" filter="url(#glow)">DnsLint</text>
+  <!-- Eyebrow -->
+  <circle cx="86" cy="86" r="4.5" fill="#37E8A0" filter="url(#glow)">
+    <animate attributeName="opacity" values="1;0.25;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <text x="102" y="90" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="12" letter-spacing="2.5" fill="#FF8A3D">// DNS HEALTH CHECKUP</text>
 
-  <rect x="400" y="185" width="400" height="2" fill="url(#lineGradient)"/>
+  <!-- Title -->
+  <text x="80" y="170" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="88" font-weight="800" letter-spacing="1" fill="url(#flow)" filter="url(#glow)">DnsLint</text>
+  <rect x="82" y="188" width="420" height="3" rx="1.5" fill="url(#rule)"/>
 
-  <text x="600" y="220" text-anchor="middle"
-        font-family="'Segoe UI', Helvetica, Arial, sans-serif"
-        font-size="18" letter-spacing="2" fill="#8B978F">DNS HEALTH CHECKUP FOR ANY DOMAIN</text>
+  <!-- Tagline -->
+  <text x="82" y="224" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#9CA3AF">A DNS health checkup for any domain.</text>
+
+  <!-- Feature chips -->
+  <g font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1" text-anchor="middle" fill="#37E8A0">
+    <rect x="82"  y="244" width="132" height="26" rx="13" fill="#121815" stroke="#232B26"/><text x="148" y="261">LIVE QUERIES</text>
+    <rect x="226" y="244" width="148" height="26" rx="13" fill="#121815" stroke="#232B26"/><text x="300" y="261">EMAIL SECURITY</text>
+    <rect x="386" y="244" width="120" height="26" rx="13" fill="#121815" stroke="#232B26"/><text x="446" y="261">TTL CHECKS</text>
+    <rect x="518" y="244" width="108" height="26" rx="13" fill="#121815" stroke="#232B26"/><text x="572" y="261">HISTORY</text>
+  </g>
+
+  <!-- Resolution trace: . -> com -> example.com -->
+  <g font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11" text-anchor="middle">
+    <rect x="700" y="52" width="26" height="24" rx="7" fill="#182019" stroke="#232B26"/><text x="713" y="68" fill="#8B978F">.</text>
+    <path d="M730 64 H744" stroke="#5C655F" stroke-width="1.5" stroke-linecap="round"/>
+    <rect x="748" y="52" width="46" height="24" rx="7" fill="#182019" stroke="#232B26"/><text x="771" y="68" fill="#8FE0B8">com</text>
+    <path d="M798 64 H812" stroke="#5C655F" stroke-width="1.5" stroke-linecap="round"/>
+    <rect x="816" y="52" width="104" height="24" rx="7" fill="#0B0F0D" stroke="url(#flow)" stroke-width="1.6" filter="url(#glow)"/>
+    <text x="868" y="68" fill="#EAF2ED" font-weight="700">example.com</text>
+  </g>
+  <text x="1140" y="69" text-anchor="end" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="12" font-weight="700" fill="url(#flow)">75 / 100</text>
+
+  <!-- Result card -->
+  <rect x="700" y="88" width="440" height="148" rx="16" fill="#121815" stroke="#232B26" stroke-width="1.5"/>
+  <rect x="700" y="96" width="440" height="24" fill="#37E8A0" opacity="0.07">
+    <animate attributeName="y" values="96;122;148;174;200" keyTimes="0;0.25;0.5;0.75;1" calcMode="discrete" dur="4.8s" repeatCount="indefinite"/>
+  </rect>
+    <circle cx="724" cy="112" r="4" fill="#37E8A0">
+      <animate attributeName="opacity" values="1;0.35;1" dur="4.8s" begin="0.0s" repeatCount="indefinite"/>
+    </circle>
+    <text x="740" y="116" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11" font-weight="700" letter-spacing="1" fill="#8B978F">AAAA</text>
+    <text x="802" y="116" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11.5" fill="#CFE6D9" textLength="76" lengthAdjust="spacingAndGlyphs">2001:db8::1</text>
+    <circle cx="724" cy="138" r="4" fill="#37E8A0">
+      <animate attributeName="opacity" values="1;0.35;1" dur="4.8s" begin="0.96s" repeatCount="indefinite"/>
+    </circle>
+    <text x="740" y="142" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11" font-weight="700" letter-spacing="1" fill="#8B978F">MX</text>
+    <text x="802" y="142" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11.5" fill="#CFE6D9" textLength="110" lengthAdjust="spacingAndGlyphs">mail.example.com</text>
+    <circle cx="724" cy="164" r="4" fill="#37E8A0">
+      <animate attributeName="opacity" values="1;0.35;1" dur="4.8s" begin="1.92s" repeatCount="indefinite"/>
+    </circle>
+    <text x="740" y="168" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11" font-weight="700" letter-spacing="1" fill="#8B978F">SPF</text>
+    <text x="802" y="168" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11.5" fill="#CFE6D9" textLength="248" lengthAdjust="spacingAndGlyphs">v=spf1 include:_spf.example.com ~all</text>
+    <circle cx="724" cy="190" r="4" fill="#FF8A3D">
+      <animate attributeName="opacity" values="1;0.35;1" dur="4.8s" begin="2.88s" repeatCount="indefinite"/>
+    </circle>
+    <text x="740" y="194" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11" font-weight="700" letter-spacing="1" fill="#8B978F">DMARC</text>
+    <text x="802" y="194" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11.5" fill="#CFE6D9" textLength="110" lengthAdjust="spacingAndGlyphs">v=DMARC1; p=none</text>
+    <circle cx="724" cy="216" r="4" fill="#FF8A3D">
+      <animate attributeName="opacity" values="1;0.35;1" dur="4.8s" begin="3.84s" repeatCount="indefinite"/>
+    </circle>
+    <text x="740" y="220" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11" font-weight="700" letter-spacing="1" fill="#8B978F">TTL</text>
+    <text x="802" y="220" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11.5" fill="#CFE6D9" textLength="193" lengthAdjust="spacingAndGlyphs">A record: 60s, unusually low</text>
+
+  <!-- Readout -->
+  <text x="700" y="262" font-family="'SF Mono','Cascadia Code',Consolas,'Courier New',monospace" font-size="11" letter-spacing="1.5" fill="#5C655F">POST /api/check  ·  5 of 8 checks shown  ·  resolver 8.8.8.8</text>
 </svg>

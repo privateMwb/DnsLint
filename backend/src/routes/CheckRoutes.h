@@ -81,8 +81,11 @@ inline constexpr std::size_t kMaxDomainLength = 255;
 /// EmailSecurityChecks.h from ever comparing case-mismatched).
 [[nodiscard]] inline std::string normalizeDomain(std::string input) {
     auto notSpace = [](unsigned char c) { return !std::isspace(c); };
-    input.erase(input.begin(), std::find_if(input.begin(), input.end(), notSpace));
-    input.erase(std::find_if(input.rbegin(), input.rend(), notSpace).base(), input.end());
+    auto trim = [&input, notSpace]() {
+        input.erase(input.begin(), std::find_if(input.begin(), input.end(), notSpace));
+        input.erase(std::find_if(input.rbegin(), input.rend(), notSpace).base(), input.end());
+    };
+    trim();
 
     auto stripPrefix = [&input](std::string_view prefix) {
         if (input.size() < prefix.size())
@@ -102,6 +105,10 @@ inline constexpr std::size_t kMaxDomainLength = 255;
 
     if (auto pos = input.find(':'); pos != std::string::npos)
         input.erase(pos);
+
+    // Trim again: whitespace that sat before a path, query or port ("example.com /x") is
+    // only at the edge now, and would otherwise end up inside the domain that gets queried.
+    trim();
 
     for (char& c : input)
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
@@ -197,13 +204,9 @@ inline constexpr std::size_t kMaxDomainLength = 255;
 
 /**
  * @brief Handles `POST /api/check`.
- * @param engine Shared QueryEngine used to run every check. Not
- * thread-safe against concurrent calls on the same instance (see
- * QueryEngine.h) -- safe here only because Server is thread-per-
- * connection and this handler is registered as the sole route touching
- * `engine`; if concurrent request volume ever makes this a bottleneck,
- * the fix is a QueryEngine per request (cheap: it owns one lazily-opened
- * socket) rather than adding locking around a shared one.
+ * @param engine Shared QueryEngine used to run every check. Safe to
+ * share across the server's worker threads (see QueryEngine.h): every
+ * query uses its own socket, and the response cache is locked.
  * @param history Shared HistoryStore every completed run is persisted
  * to. Safe to share across concurrent requests unconditionally -- see
  * its own class doc comment on internal locking.

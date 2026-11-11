@@ -1,7 +1,13 @@
 # docs/
 
-Documentation for this project: the generated API reference, and
+Documentation for this project: the guides below, the generated API reference, and
 the source files/assets that reference lives in.
+
+## Guides
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — how it works: the request path, the checks, QueryEngine, HistoryStore, fuzzing
+- [DEMO.md](DEMO.md) — a short guided tour
+- [DEPLOYMENT.md](DEPLOYMENT.md) — hosting: Render backend, Vercel frontend, behavior to expect, troubleshooting
 
 ## Contents
 

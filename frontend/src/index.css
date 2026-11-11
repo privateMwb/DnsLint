@@ -26,6 +26,12 @@
   --color-signal-orange: #ff8a3d; /* warn + primary action color */
   --color-signal-red: #ff6b5c; /* fail -- kept warm/muted so it doesn't fight green+orange */
 
+  /* Decorative only (never a status): the two in-between stops of the brand gradient
+     (mint -> pale mint -> gold -> ember) that the README artwork uses. Pass/warn/fail
+     above keep their LED meanings. */
+  --color-mint-soft: #8fe0b8;
+  --color-signal-gold: #ffc857;
+
   --color-paper: #eaf2ed; /* primary text -- slight green-white, not stark #fff */
   --color-ash: #8b978f; /* secondary/muted text */
   --color-ash-dim: #5c655f; /* tertiary text, timestamps */
@@ -37,6 +43,21 @@
 
 html {
   color-scheme: dark;
+}
+
+/* The brand gradient as text: mint -> pale mint -> gold -> ember. */
+@utility text-flow {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-signal-green),
+    var(--color-mint-soft) 35%,
+    var(--color-signal-gold) 70%,
+    var(--color-signal-orange)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 body {

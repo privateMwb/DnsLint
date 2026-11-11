@@ -7,9 +7,11 @@
 # actually built and verified there, rather than claim support
 # that hasn't been checked.
 #
-# No test step: backend/ has no tests/ directory yet in this
-# template. Add one (and a corresponding step here, e.g. `ctest`)
-# once real tests exist.
+# After each build, runs dnslint_tests (backend/tests/): unit tests
+# for the domain handling, the DNS rdata decoders, QueryEngine and
+# every check (against an in-process mock DNS server, so no network),
+# and HistoryStore. The sanitizer workflow runs the same suites, and
+# the real server, under ASan/UBSan and TSan.
 # ============================================================
 
 name: Build
@@ -64,3 +66,7 @@ jobs:
       - name: Build
         working-directory: backend
         run: cmake --build build-${{ matrix.compiler }}-${{ matrix.build_type }} --config ${{ matrix.build_type }}
+
+      - name: Run tests
+        working-directory: backend
+        run: ./build-${{ matrix.compiler }}-${{ matrix.build_type }}/dnslint_tests

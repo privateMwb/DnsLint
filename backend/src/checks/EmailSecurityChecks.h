@@ -25,6 +25,7 @@
 
 #include <array>       // std::array
 #include <cstdint>     // std::uint16_t
+#include <optional>   // std::optional
 #include <string>      // std::string
 #include <string_view> // std::string_view
 // clang-format on
@@ -43,19 +44,39 @@ namespace detail {
 
 /// @brief Queries TXT records at `name` and returns every decoded TXT
 /// value found, or an empty vector on any query failure.
-[[nodiscard]] inline Vector<std::string> queryTxtValues(QueryEngine& engine,
-                                                        std::string_view name) {
+/// @brief The outcome of a TXT lookup: whether the query itself worked, and what it found.
+/// @details Kept together so a check can tell "no such record" (`status == Ok`, empty
+/// `values`) from "couldn't ask" (any other status). Collapsing both into an empty list
+/// would report a transient timeout as a missing record.
+struct TxtLookup {
+    QueryStatus status = QueryStatus::Ok;
     Vector<std::string> values;
+};
+
+[[nodiscard]] inline TxtLookup queryTxtValues(QueryEngine& engine, std::string_view name) {
+    TxtLookup lookup;
 
     QueryResult queryResult = engine.query(name, RecordType::TXT);
+    lookup.status = queryResult.status;
     if (queryResult.status != QueryStatus::Ok)
-        return values;
+        return lookup;
 
     for (const auto& record : queryResult.message.answers)
         if (record.type == static_cast<std::uint16_t>(RecordType::TXT))
-            values.push_back(decodeTxt(record.rdata));
+            lookup.values.push_back(decodeTxt(record.rdata));
 
-    return values;
+    return lookup;
+}
+
+/// @brief The warning a check reports when its TXT query couldn't be completed, or an
+/// empty optional when the query worked.
+[[nodiscard]] inline std::optional<CheckResult> txtQueryProblem(const TxtLookup& lookup,
+                                                                const char* checkName) {
+    if (lookup.status == QueryStatus::Ok)
+        return std::nullopt;
+    if (lookup.status == QueryStatus::Timeout)
+        return CheckResult{checkName, CheckStatus::Warn, "Query for TXT records timed out."};
+    return CheckResult{checkName, CheckStatus::Warn, "Could not query TXT records."};
 }
 
 /// @brief Returns a pointer to the first decoded TXT value starting
@@ -78,9 +99,11 @@ namespace detail {
 /// @brief Checks for an SPF record (a TXT record on the domain itself
 /// starting with "v=spf1"), showing its actual content on a pass.
 [[nodiscard]] inline CheckResult checkSpf(QueryEngine& engine, std::string_view domain) {
-    Vector<std::string> values = detail::queryTxtValues(engine, domain);
+    detail::TxtLookup lookup = detail::queryTxtValues(engine, domain);
+    if (auto problem = detail::txtQueryProblem(lookup, "spf_present"))
+        return *problem;
 
-    if (const std::string* match = detail::findStartsWith(values, "v=spf1"))
+    if (const std::string* match = detail::findStartsWith(lookup.values, "v=spf1"))
         return {"spf_present", CheckStatus::Pass, *match};
 
     return {"spf_present", CheckStatus::Fail, "No SPF record found."};
@@ -90,9 +113,11 @@ namespace detail {
 /// starting with "v=DMARC1"), showing its actual content on a pass.
 [[nodiscard]] inline CheckResult checkDmarc(QueryEngine& engine, std::string_view domain) {
     std::string dmarcName = "_dmarc." + std::string(domain);
-    Vector<std::string> values = detail::queryTxtValues(engine, dmarcName);
+    detail::TxtLookup lookup = detail::queryTxtValues(engine, dmarcName);
+    if (auto problem = detail::txtQueryProblem(lookup, "dmarc_present"))
+        return *problem;
 
-    if (const std::string* match = detail::findStartsWith(values, "v=DMARC1"))
+    if (const std::string* match = detail::findStartsWith(lookup.values, "v=DMARC1"))
         return {"dmarc_present", CheckStatus::Pass, *match};
 
     return {"dmarc_present", CheckStatus::Fail, "No DMARC record found."};
@@ -116,9 +141,9 @@ namespace detail {
 
     for (const char* selector : kCommonSelectors) {
         std::string selectorName = std::string(selector) + "._domainkey." + std::string(domain);
-        Vector<std::string> values = detail::queryTxtValues(engine, selectorName);
+        detail::TxtLookup lookup = detail::queryTxtValues(engine, selectorName);
 
-        if (const std::string* match = detail::findStartsWith(values, "v=DKIM1"))
+        if (const std::string* match = detail::findStartsWith(lookup.values, "v=DKIM1"))
             return {"dkim_present", CheckStatus::Pass,
                     std::string("(selector \"") + selector + "\") " + *match};
     }

@@ -118,13 +118,23 @@ jobs:
       # -----------------------------------------------------------------------------------------
 
       - name: Install Playwright
+        timeout-minutes: 10
         run: |
           mkdir "$RUNNER_TEMP/pw"
           cp scripts/capture-screenshots.mjs "$RUNNER_TEMP/pw/"
           cd "$RUNNER_TEMP/pw"
           npm init -y
-          npm install playwright@1.49.1
-          npx playwright install --with-deps chromium
+          npm install playwright@1.64.1
+
+          # The browser itself. Deliberately not `--with-deps`: that runs apt-get, and when the
+          # runner can't reach the Ubuntu package mirrors it hangs for minutes and then fails the
+          # whole job, even though GitHub's runners already carry the libraries Chromium needs.
+          npx playwright install chromium
+
+          # Extra system packages (mostly fonts) are a nice-to-have, so this is best effort and
+          # time-boxed: if apt is unreachable we carry on with what the runner already has.
+          timeout 180 npx playwright install-deps chromium \
+            || echo "Skipping extra system packages (apt unavailable); using what the runner has."
 
       - name: Capture screenshots
         working-directory: ${{ runner.temp }}/pw

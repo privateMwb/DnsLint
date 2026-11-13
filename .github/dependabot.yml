@@ -47,6 +47,16 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "npm"
+    ignore:
+      # typescript-eslint 8.x only supports TypeScript below 6.1, so a TypeScript 6.1 or 7 bump
+      # makes `npm ci` fail with ERESOLVE, and because everything npm moves is one grouped PR,
+      # it takes the whole group down with it (Frontend build and Vercel deploy included).
+      # Patch releases still flow. Remove this once typescript-eslint lists the newer TypeScript
+      # as a supported peer.
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-major"
     # Everything npm moves in ONE PR, majors included. These packages can't be bumped one at a
     # time: react-dom needs the matching react, and @vitejs/plugin-react needs the matching
     # vite, so separate PRs each fail CI on their own.
